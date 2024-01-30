@@ -1,0 +1,47 @@
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+:imagesdir: images/
+endif::[]
+
+// NOTES: 100L constructor should be tested with a stock getter.
+//        the 2-5L requirement is not tested, should be in there
+//        the barkeeper.serve() test is incomplete
+
+*In the pub*
+
+toc::[]
+
+*Goal*: Your task is to implement and test the process of drinking beer in a pub. Write unit tests to test:
+. If your implementation works and 
+. If it conforms to the specification
+. if exceptions are properly handled. 
+
+*Work test driven!*
+
+== Background info
+
+This exercise focus on  
+
+_Here are the specifications of this exercise. Turn them into *testable requirements* before you start your TDD process._
+
+. Initially the pub has 100L of beer available (check the MainSimulation class).
+. A barkeeper and beer drinkers belong to a Pub.
+. Beer drinkers can ask the barkeeper for beer.
+. Beer is handed out either in small format (0.2L) or pint format (0.57L).
+. Beer drinkers can only drink a limited amount of beer, between 2L and 5L.
+
+== TODO
+
+The BarkeeperTest class has the needed variables and the "beforeEach" method. use them in your tests.
+
+. Implement the barkeeper test!
+. Implement the getMessageOrDefault();
+
+In your first test method, you want to test whether the tapping of beer works as intended. Let the test fail first,
+then implement the logic of that test. When you have finished,continue to the next part.
+
+The exercise is finished when you have tested and implemented each requirement.

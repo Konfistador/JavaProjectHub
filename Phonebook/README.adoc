@@ -1,0 +1,192 @@
+= Exercise PhoneBook
+
+In this exercise, you will write your own "phone book". Think about managing contacts in your mobile phone.
+As this is the first exercise, we will work through the solution and have some accompanying text for you to read.
+Please read the complete text first and don't just copy+paste the code; instead apply concepts and play around with tests and 
+implementation.
+
+You already developed a phonebook in PRC1. Let's write our own tests and work test-driven to implement a phonebook again.
+
+*Turning requirements into testable statements* +
+Let's get started with TestDrivenDevelopment. How do we proceed? Starting point is to write down *requirements* 
+in a way that these are *testable*. For example, instead of writing "The system should add numbers together", 
+better write "2 and 2 should equal 4". The first statement is not testable, the second statement is much easier
+to test: `assertThat(2+2).isEqualTo(4)`.
+
+The list of requirements reads: a user must be able to...
+
+. add one or more phone numbers to the relative person
+. search phone numbers by name
+. search a name by phone number
+. add an address to the relative person
+. search for personal information (search for a person's address and phone number by name)
+. remove all information about a person
+
+
+The requirements above can now be turned into different *test scenario's*. Each requirement can even have multiple test scenario's.
+Sometimes, provided requirements raise questions. For example, the first requirement states that we should be able to add one or
+more phone numbers. At once? Or should we be able to add numbers afterwards? Writing test scenario's forces you to clarify the 
+requirements! In real world, you have to discuss these with your customer. In this case we mean that you can only add numbers 
+one-by-one, so after each other. Can the same name occur more than once? Good question. In this case not. Names are unique. 
+Multiple Phone numbers can be added to an existing name, but only one address can be stored. Adding another address wil overwrite
+the existing address. Should phone numbers or addresses stick to a predefined format? Normally yes, but in our case it's free text.    
+
+Let's have a look at some test scenario's:
+
+. Lookup a person information by name:
+.. Input "Jukka" should yield null (when we haven't added any entries yet)
+. Add person name and phone number:
+.. input "Pekka", "040-1234567" should store these values
+.. lookup: "Pekka" should yield textual information that contains "040-1234567"
+. Lookup a person by number after the previous addition:
+.. input "02-444123" should yield null
+.. input "040-1234567" should yield textual information containing at least "Pekka"
+. Add another phone number:
+.. input "Pekka", "040-7654321" should store the additional phone number
+.. lookup: "Pekka" should yield textual information that contains "040-1234567" and "040-7654321"
+. Add address:
+.. input "Pekka" and "Hulsterweg 6, Venlo"
+. Lookup personal information by name:
+.. lookup "Pekka" should yield textual information containing address "Hulsterweg 6, Venlo" and phone number "040-123456"
+. Deleting personal information by name:
+.. Input "Pekka", should delete "Pekka" and number and address
+
+
+You'll notice that it is not always possible, but at least try to make test scenario's independent of each other. Furthermore
+notice that one set of requirements leaves room for several designs and implementations.
+
+Since the lecturers would like to test your implementations as well, an existing project is provided, containing two classes 
+(PhoneBook and BookEntry) and one test class (PhoneBookTest). Lecturers will only test the PhoneBook class, since BookEntry is
+only an implementation detail that is not relevant to the end user. The idea is that you'll write the test for a test scenario
+first. You'll check if the test fails and afterwards you'll write an implementation to let the test succeed. The PhoneBook class
+already contains the methods that need to be tested and implemented. Above each method you'll fond a short JavaDoc documentation.
+
+
+This is what our test class looks like. To avoid creating a new phonebook object in every test, we use declare a field in the test class and initialize it with a `new PhoneBook()`.
+[source,java]
+----
+public class PhonebookTest {
+    // create the
+    Phonebook phonebook= new Phonebook();
+    //
+}
+----
+
+Note that JUnit creates a new test class instance before every test method is run. So for each test, everything is *fresh*.
+
+Let's work our way through the list of test scenario's. In the beginning, we want to have a phonebook that actually looks up people.
+Because we haven't added anything to the book yet, we're starting with the test case that the person is not found.
+We could have written the test differently; instead of testing `isNull`, we could have asked for `isEqualTo("person not found")`.
+The reason we are not doing that is that we are making the test brittle (prone to break): by expecting a very specific String output,
+we essentially force our phonebook implementation to output "person not found".
+This is not the point of a test. You want to make sure that you test that functionality "if person is not found, the method should not return a person".
+It's intuitive.footnote:[to a Java programmer anyway] to use the `isNull` comparison here.
+
+[source,java]
+----
+    @Test
+    public void phonebookSearchByNameNotFound() {
+      assertThat( phonebook.searchByName( "Jukka" ) )
+         .as("Person not present should return null")
+         .isNull();
+    }
+----
+Next, we add a person and use the `searchByName` function again to see whether the adding was successful.
+To check whether we have successfully added an entry to the phonebook, we make use of the (already partially tested) search function.
+We are using the `contains` comparison to see whether our phonebook contains the data we ask for. In this case, we're satisfied
+when the phonebook returns a long String containing all the data you add, not in any predefied structure. Normally you would probably
+design it differently. Essentially, when writing our tests we constantly make judgment calls of how lax or strict our tests should be. 
+Let's leave our test like this for now:
+[source,java]
+----
+@Test
+public void phonebookAddsEntry() {
+    phonebook.add("Pekka","040-123456");
+    assertThat(phonebook.searchByName("Pekka"))
+       .as("An added person, phone number should be found")
+       .contains("040-123456");
+}
+----
+
+Are you getting the hang of it? Remember that our tests don't prescribe one specific implementation- each
+of you can write a different phonebook implementation that all pass these tests. The more tests we write however,
+the more we have to optimize our implementation. We will see that with our next set of tests, the address entry.
+According to our requirements, the phonebook should also contain the address of the persons added, and naturally,
+it should be possible to look up addresses when specifying a person's name. Again, our test forces us to
+make an implementation decision. In the code below, `addAddress` is a separate
+method and the `searchByName` method is now expected to yield the address as well.
+[source,java]
+----
+@Test
+public void phonebookSearchAddress(){
+    phonebook.addEntry( "Pekka", "040-123456" );
+    phonebook.addAddress( "Pekka", "Hulsterweg 6, Venlo" );
+    assertThat(phonebook.searchByName( "Pekka" ))
+       .as("after add, parts of the address required")
+       .contains( "Hulsterweg 6", "Venlo" );
+}
+----
+
+[NOTE]
+[blue big]*Using an API properly can boost your application's performance.* +
+For instance when you
+first ask a map if a key is contained and then ask it to retrieve it is effectively asking
+the map to do the same information twice, effectively doubling the work.
+In such case, simply ask for the bloody thing. The map will return null if it does not have it,
+and checking for null on your side is just as efficient as checking for the boolean return value of contains.
+Look at the HashMap API.
+
+Here is what an alternative test could look like:
+[source,java]
+----
+@Test
+public void phonebookSearchAddress(){
+    phonebook.addEntry( "Pekka", "040-123456", "Hulsterweg 6, Venlo");
+    assertThat( phonebook.searchAddress( "Pekka" ) )
+      .as("addEntry should add phone and address")
+      .contains( "Hulsterweg 6" ,"Venlo", "040-123456" );
+}
+----
+In this version, the `addEntry` method is required to take a third argument, the address;
+and there is a specific search function that looks up addresses only. Which of these two versions
+(or another version entirely) you choose is down to the business logic and best coding practices.
+If the business logic requires a separate address search for example, the second test is the way to go.
+But the way we have phrased our requirement, the first version is correct.
+
+[NOTE]
+[blue]*Another tip on maps:* +
+If you iterate through a map, only to retrieve key and value when the key is found,
+do [red]*not* iterate through the [red]`keySet` to find the key, but instead use the [green]`entrySet`, because that also
+avoids double work on the maps side. The entryset is the set of key-value pairs, so you will have both in one go.
+
+New tests can have an impact on our implementation. Perhaps up until now you have used
+a `HashMap<String, ArrayList<String>>` to store a persons name and their phone numbers.
+Now that people also need addresses, our simple `HashMap` implementation reaches its limits.
+Sure, we could store numbers and addresses in the same `ArrayList`, but that would be messy.
+Instead, we could use Object-oriented principles and create a `BookEntry` class that holds name,
+numbers and addresses and the `HashMap<String,BookEntry>` binds people's name and bookEntry Objects.
+
+How you implement your phonebook is up to you, but we can see here that as testing progresses,
+we are forced to *refactor* our code and to optimize it so that it passes the tests. The key point here is 
+that our test should not worry about whether you implement a `BookEntry` class, but is concerned
+solely with the outcome. That way, different implementations can achieve the same end result.
+
+*Your turn!* 
+
+Implement the phonebook in a TestDriven fashion; for each of the described test scenario's, one-by-one:
+
+* Write a test in the PhoneBookTest class.
+* Run your test and make sure it fails. 
+* Write an implementation to make your test green.
+
+Afterwards:
+
+* Derive additional test scenario's from the requirements above. 
+* Again, for each of them, write a UnitTest and afterwards implement the methods needed. 
+
+And finally:
+
+* After a push to Git, CodeGrade will run your and our tests, to to check whether you succesfully finished the assignment. Check your
+result in the Canvas assignment.
+
+[big blue]*And this is it! Our very first test-driven phonebook!*

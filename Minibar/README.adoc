@@ -1,0 +1,34 @@
+= Exercise Minibar
+
+The narrative of this exercise is a silly story, but will help you test driven develop handling and throwing of exceptions.
+It is a simplified version of a minibar, which is a self service in some hotels.
+Maybe we will revisit it in later weeks with some refinements.
+We are developing code (classes) for a carnival simulations, that throw exceptions to make thins more lively.
+
+The important parts here are:
+
+* A `Stock` from which you can `Beer draw(double)` and that can become empty and throws an exception
+  when it can't supply the requested volume.
+  The exception is an `EmptyStockException` and is a *checked exception*.
+  You may have seen that too, the tap will sputter.
+* A `Beer` has a volume, specified in the constructor as double. Think of it as the glass or mug.
+  A getter for the volume (double) and a constructor that takes the volume. +
+* A `Guest` that drinks the beer, but can get drunk. This happens when the drinker reaches his capacity.
+  A constructor that specifies the capacity, an additional field that holds the fill, and a `Guest drink( Beer )`
+  method that adds the volume of the beer to the fill [blue]*and returns* the Guest, so the guest can do a merry `guest.drink(b).drink(b).drink(b);`. +
+  The exception thrown should be an *unchecked exception* named `DrunkenException`. You may have observed that in the wild.
+[TIP]
+You may have to modify the void return type of Guest.drink(..) from void to Guest.
+
+[blue]*TDD* to achieve that:
+
+* *Test1*: The stock can be used when not empty. It should not throw an exception. Assert that the exception is not thrown.
+* *Test2*: When you draw a volume, getLeft() returns a lower value. Ignore the exception, because
+   you set it up with plenty stock. Test that the volume is reduce by the amount drawn.
+* *Test3*: an overdraft on the stock throws a checked exception, an `EmptyStockException` when the stock can't supply the requested volume.
+* *Test4*: The drinker can drink the beer. Give him a civil amount, that should not cause issues.
+* *Test5*: However, when he is full, he throws a `DrunkenException`.
+
+Convert the above in test scenarios and develop each of the classes and methods.
+
+Use the class and method names as given.

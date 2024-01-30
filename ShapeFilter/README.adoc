@@ -1,0 +1,53 @@
+:imagesdir: images/
+
+:toc: macro
+
+ifdef::env-github[]
+
+:tip-caption: :bulb:
+
+:note-caption: :information_source:
+
+:important-caption: :heavy_exclamation_mark:
+
+:caution-caption: :fire:
+
+:warning-caption: :warning:
+
+:imagesdir: images/
+
+endif::[]
+
+= Exercise Shapefilter
+
+In package `shapes.basic` you have multiple shapes, among which are:
+
+* *Disk* which extends Circle. Disk contains an image.
+* *Sphere* which extends Disk. Sphere creates a 3D like image of a sphere or Ball.
+
+The essential detail here is that Disk and Sphere are sub classes of Circle.
+There is no need to change anything in this package. Just check if you
+understand the inheritance hierarchy and the use of interfaces and abstract
+classes.
+
+.Hierarchy of shapes, assume mathematical shapes, so a line has no width and hence no surface area. Nor does an arc.
+image::acceptablesupers.svg[]
+
+*Shape filter*
+This part is about generics. Remember the PECS acronym. In the ShapeManager
+test-driven develop two methods:
+
+* `void addShapes(List<...> shapesToAdd)` Make sure to use the proper
+list definition with generics. The idea is that each list of
+shapes (e.g. a list of Circles, a list of Disks, a list
+of Shapes can be processed).
+
+* `boolean collectShapesOfType( Collection<...> consumer, Class<...> type )` This method takes two arguments,
+(1) a list (like a list) in which you can put shapes and (2) the type of shape
+you want to filter. For example, you’re passing an empty list that is filled
+with all Circles.
+
+The learning goal in the exercise is to get the generics write, almost a fill in the dots in the methods above.
+Of course the declaration must be correct on both call-site (where you call the method) and at the method site.
+
+Using raw types is certainly wrong.

@@ -1,0 +1,6 @@
+# "quoted test input", should match, found group value, found snummer, grade 
+"3785895 Jan Jansen   8.7.1997 6.6 8.3  2.4 6,8", true,"6,8", 3785895, 6.8D
+"3895785 Piet Jansen  8.7.1997", false,,, 0.0D
+"3785985 Henk Jansen  8.12.1994 6.6 8.3  2.4 7.9", true, "7.9", 3785985, 7.9D
+"3785915 Niki Jansen  8.12.1994 6.6 8.3  2.4 8", true,"8", 3785915, 8D
+"1245717 Joepie Hombergh van den 18.03.1992 10.0 10.0  10.0 10", true, "10", 1245717, 10D

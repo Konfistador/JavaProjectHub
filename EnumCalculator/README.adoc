@@ -1,0 +1,70 @@
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+:imagesdir: images/
+endif::[]
+
+= Exercise Enum Calculator
+
+In this exercise you build a calculator that has its operations expressed in an [blue]*enum* called `Operator`. 
+
+This enum uses a field of type https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/function/IntBinaryOperator.html[IntBinaryOperator] (Functional Interface), that specifies the method `applyAsInt(int a, int b)`. 
+
+You will use that field to evaluate the expression.
+The enum values in `Operation`` are `ADD`, `SUBTRACT`,
+   `MULTIPLY`, `DIVIDE`, and `POWER` with the usual meaning. +
+Each enum value has a symbol of type `String`, e.g.
+`"+"` for ADD and `"**"` for the Power operation. See also <<table-operations, operations>>.
+
+Your task is to test driven develop the *Operator-enum*. The main class called `Calculator` is given. It uses the `Operator` to do the actual computation.
+It can compute simple space-separated integer expressions like `2 + 3` or `2 ** 10`. The main class is just a sample TextUserInterface (TUI) that doesn't need 
+to be tested itself.
+
+The functional requirements are:
+
+* The Operator enum has a constructor that takes 2 parameters:
+. a symbol string, e.g "+"
+. a https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/function/IntBinaryOperator.html[IntBinaryOperator ^]
+  (functional interface) object. +
+  This is used to supply the actual computation to the enum value
+  like in `ADD( "+", ( a, b ) -> a + b )` where the lambda `( a, b ) -> a + b` is the `IntBinaryOperator`. +
+  Both constructor parameters are saved as fields.
+* You should be able to lookup the Operator by its symbol, using a static method `Operator get(String symbol)`.
+* You should be able to lookup the supported Operator symbols, using a static method `String[] supportedSymbols()`
+* The Operator has a compute method `int compute(int a, int b)`, which does the actual work and uses the method applyAsInt.
+* A division by zero is not allowed and should result in an IllegalArgumentException.
+
+[[table-operations]]
+.All operations
+[cols="<,^q",options="header"]
+|====
+| Operator | Symbol
+| ADD | '+'
+| SUBTRACT | '-'
+| MULTIPLY | '*'
+| DIVIDE | '/'
+| POWER | '**'
+|====
+
+The non-functional requirements regarding the tests are that you use a JUnit 5 `@ParameterizedTest`.
+
+.A csv source could look like this. Abbreviated.
+[source,java]
+----
+   @ParameterizedTest
+   @CsvSource( {
+        // the compiler will turn the lines in one string each.
+        // eg the first line results in the String "add,+,6, 2, 3 "
+        // we use this technique to let the compiler
+        // do the _hard_ work of computing the result values.
+        // message, sym, expected, a,b
+        "add,       +," + ( 2 + 3 ) + ", 2, 3 "
+   } )
+    public void testOperator( String message, String symbol,
+                             int expected, int a, int b  ) {
+      // test code left out, the exercise ;-))
+    }
+----

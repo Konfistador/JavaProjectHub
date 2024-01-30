@@ -1,0 +1,82 @@
+:toc: macro
+:imagesdir: images/
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+:imagesdir: images/
+endif::[]
+
+
+= Class Genealogy
+
+toc::[]
+
+*Goal*: Your task is to create a program that generates the class hierarchy and the non static fields of a given class name. 
+
+
+== Background info
+
+In the following exercise you will use the information that is available
+in the Class object. You will find the interfaces, super classes and the interfaces that are implemented by the super classes and the class with the fields that are defined in each of the classes in the field hierarchy (in the super classes).
+
+image::jbuttontree.png[role="left thumb", title="inspiration for this task"]
+
+The picture only shows the direct lines of ancestry, not the interfaces nor the non static fields. In this task you should show the implemented interfaces plus the fields.
+
+To get a class object you can use `Class.forName(String name)` which if
+the class is loadable by the JVM, then it will be loaded.
+
+[[StringBuilder]]
+.Example output for "java.lang.StringBuilder"
+[source,java]
+----
+class hierarchy of [java.lang.StringBuilder]
+ public java.lang.Object
+   abstract java.lang.AbstractStringBuilder  implements public java.lang.Appendable, public java.lang.CharSequence
+     public final java.lang.StringBuilder  implements public java.io.Serializable, public java.lang.Comparable
+//declared fields:
+{
+     byte[] value  // declared in: AbstractStringBuilder
+   , byte coder  // declared in: AbstractStringBuilder
+   , int count  // declared in: AbstractStringBuilder
+}
+----
+
+Only show the visibility of a type and field. Visibility is encoded in the lower three bits of the type or member Modifier, and the finality is encoded in the fourth bit.
+meaning that `String visibility = Modifier.tostring( m.getModifiers() & ( 7+16 ));` produces the visibility and finality in string form.
+The following link shows the modifiers and their values.
+https://docs.oracle.com/en/java/javase/11/docs/api/constant-values.html#java.lang.reflect.Modifier.ABSTRACT
+
+
+== TODO
+
+As usual, start with writing the tests. The test class has two tests:
+
+. One to show the genealogy of the Genealogy class itself.
+. One to show the class hierarchy of `javax.swing.JButton`.
+
+Then, implement the `getAncestry( String typeName )`
+
+
+The output should be a tree-like structure with `Object` at the top and the `named class` at the bottom and all intermediate `super classes` in between in proper order. For every level in the hierarchy, add two spaces for indentation.
+At the end the program of the hierarchy it should show the non-static fields that are defined in all classes in the hierarchy with the modifiers in the order of definition.
+
+At the bottom of the hierarchy we want all _non-static_ *Declared* *fields* in the class hierarchy in declaration order, that is in order from the top of the hierarchy to the bottom and within the classes in field order (as you can see in the <<StringBuilder, example>> above).
+
+To determine if a field is non-static use.
+
+.Predicate to check a if a field is a static
+[source,java]
+----
+Predicate<Field> nonStatic = ( Field f ) -> !Modifier.isStatic( f.getModifiers() );
+----
+
+In the project you will find some sample classes to test your application with. (Student, Person class).
+
+Testing can be done by using `assertThat(String).contains(String....)`.
+Doing so will get a quick full coverage, but testing the exact result may be a bit tricky.
+
+Formatting test can be done with your eye-balls (be the judge of your test).

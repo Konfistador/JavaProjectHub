@@ -1,0 +1,90 @@
+:imagesdir: images/
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+:imagesdir: images/
+endif::[]
+
+= Reading grades from text source
+
+To be able to insert student grades into progress, the teachers want to be able to copy and paste
+grades from a spreadsheet (which is the typical way grades are assembled) into a text area.
+In this exercise, a simple file will do as the source of the grades, because working with a real clipboard is a project in itself.
+
+In this exercise you have to test and implement the `GradeCapture`. 
+The `GradeCapture` is used to extract the student number and the grade (if present) out of a whitespace separated file using a regular expression.
+
+We have the following properties:
+
+* Whitespace is used as a column separator
+* The student number consists of seven consecutive digits and is always in the first column
+* The grade consists of one digit (7), two digits (10), or two digits separated by either a dot (7.8) or a comma (7,9) and is always in the last column
+* The number of columns is not fixed and may change per row
+* When no grade is found in the input line, and the getResult method is invoked anyway, the result should contain  key=`null`  and value =`null`.
+** So both the `grade` and `studentId` methods should in that case return `null`
+
+== TODO
+
+1. Implement the tests in `GradeCaptureTest`
+** In `testGetResult` use https://fontysvenlo.github.io/prc2/docs/unit-testing-basics/#_soft_assertions[SoftAssertions] to test both when the regex should match and when the regex shouldn't match
+2. Implement the regular expression in `GradeCapture` that captures the student number in one capture group and the grade (if present) in the second capture group
+3. Implement the other method in `GradeCapture` in order
+
+== Test data
+
+Below is a table of test data that can be used.
+
+* Test input: the input that can be used to test the regex
+* Should match: whether the regex should match on the test input
+* Found grade: the grade as captured by the regex
+* Found snummer: the student number as captured by the regex
+* Grade: the converted grade to a `double`
+
+.Test data
+[format="csv", options="header", cols="5,1,1,1,1"]
+|===
+"test input", should match regex, found grade, found snummer, grade
+"3785895 Jan Jansen   8.7.1997 6.6 8.3  2.4 6,8", true,"6,8", 3785895, 6.8D
+"3895785 Piet Jansen  8.7.1997", false,`null`,`null`, `null`
+"3785985 Henk Jansen  8.12.1994 6.6 8.3  2.4 7.9", true, "7.9", 3785985, 7.9D
+"3785915 Niki Jansen  8.12.1994 6.6 8.3  2.4 8", true,"8", 3785915, 8D
+"1245717 Joepie Hombergh van den 18.03.1992 10.0 10.0  10.0 10", true, "10", 1245717, 10D
+|===
+
+== Hints
+
+You can use the following regular expression patterns
+
+* `^`: Start of a line
+* `$`: End of line
+* `[0-9]` or `\d`: Matches digits
+* `.`: Matches any character
+* `\s`: Matches any whitespace
+* `()`: Capture group
+* `[]`: Matches single character within the brackets
+* `*`: Matches previous expression zero or more times
+* `+`: Matches previous expression one or more times
+* `{n}`: Matches previous expression n times
+* `?`: Matches the previous expression zero or one time
+* `|`: Matches either the expression before or after
+
+Use a website like https://regex101.com/[https://regex101.com/] to help build the regular expression.
+
+You can copy the following test data into the `test string`
+
+.Test string for the regular expression
+[source, text]
+----
+3785895 Jan Jansen 8.7.1997 6.6 8.3 2.4 6,8
+3895785 Piet Jansen 8.7.1997
+3785985 Henk Jansen 8.12.1994 6.6 8.3 2.4 7.9
+3785915 Niki Jansen 8.12.1994 6.6 8.3 2.4 8
+1245717 Joepie Hombergh van den 18.03.1992 10.0 10.0 10.0 10
+----
+
+Where the output could look as follows
+
+image::regex101.png[]

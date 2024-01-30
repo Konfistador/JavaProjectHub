@@ -1,0 +1,149 @@
+= Exercise Flawless Password
+
+Whenever you register an account somewhere, you are asked to create a password. Usually, this
+password needs to adhere to a certain standard such as a minimum of eight characters or at least one uppercase
+letter, a special character such as ampersand (&), star (*), dash (-) or exclamation marks (!).
+
+In this exercise, you have to write methods that validate a password. For example, one
+method checks whether the password contains an uppercase letter. Remember to start writing
+the tests first! The password should follow these rules:
+
+* be at least 10 characters long.
+* contain at least one *uppercase letter*.
+* contain at least one *lowercase letter*.
+* contain at least one *digit*.
+* contain at least one *special character*, defined as NOT a letter and not a digit.
+
+When all requirements are met, the password will not be blank, so that needs no separate encoding.
+
+The list of special characters in ASCII is `!"#$%&'()*+,-./:;<=>?@[\]^_{|}~` and +`+.
+I found that out with the little program `validator.SpecialChars`. It chooses all ASCII characters between character number 33 (space+1).
+and 127, excluding those that qualify as letters aor digits.
+
+The java Character class has quite a few `static` methods to check if a character classifies as a certain kind of character. For instance
+`Character.isDigit('9')`  will return `true` as will  `Character.isUpper('Ä')`.
+
+The design you are going to implement is using a so called *FlawSet*, a set of flaws or missing requirements.
+This uses the approach of _elimination_. In this case elimination of flaws or missing requirements.
+
+Each Flaw is modeled as a value of the `enum` `Flaw` which according to the requirements has 5 values.
+Each value has a description on what the flaw is, and a character to encode the flaws as a short string. This is helpful in testing as you will see.
+
+In the validator we create a set of flaws and fill it with all possible flaws. If a requirement is met, the flaw (not meeting the requirement)
+can be removed from the set. If the set is empty, because all potential flaws have been removed, you know that the subject of the flaw tests meets all requirements.
+It is *flawless*.
+
+The FlawSet is modeled using an EnumSet. An EnumSet is an implementation of a set with the member type an [blue]#enum# of some sort, the Flaw [blue]#enum# in our case.
+An EnumSet is a very space efficient and fast set implementation. +
+Study *Horstmann Vol I Section 9.4.6* and  https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/EnumSet.html[EnumSet api].
+
+The validator test should be set up using a parameterized test, using a CsvSource, in which each line contains a password and the set of flaws that it has.
+To avoid too long texts in in the table we encode each flaw as a single character, which are hopefully mnemonic, to help readability of the test method.
+For instance *'U'* means missing upper case, *'l'* missing lower case.
+This is the encoding character in the Flaw enum.
+
+The Flaw enum has two convenience methods, which you can use as is.
+
+. `static EnumSet<Flaw> stringToFlawSet( String encoding )` that takes a String and returns a FlawSet that goes with it.
+. `static Flaw encodingToFlaw( char encoding )` that returns a Flaw value dependent on its encoding character.
+
+.Flaw enum. (imports left out)
+[source,java]
+----
+import java.util.EnumSet;
+import static java.util.EnumSet.noneOf;
+import static java.util.stream.Collectors.toCollection;
+
+enum Flaw {
+    NOUPPER( 'U', "No UPPER case letter" ),
+    NOLOWER( 'l', "No lower case letter" ),
+    NODIGIT( '8', "No digit" ),
+    NOSPECIAL( '#', "No special character" ),
+    TOO_SHORT( 's', "Too short" );
+    final char encoding;
+    final String description;
+
+    Flaw( char encoding, String description ) {
+        this.encoding = encoding;
+        this.description = description;
+    }
+
+    char getEncoding() {
+        return encoding;
+    }
+
+    String getDescription() {
+        return description;
+    }
+
+    static Flaw encodingToFlaw( char encoding ) {
+        for ( validator.Flaw flaw : values() ) {
+            if ( flaw.getEncoding() == encoding ) {
+                return flaw;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Collect the encoded flaws into an initially empty set.
+     * @param encoding the flaws
+     * @return the set of flaws matching the encoding.
+     */
+    static EnumSet<Flaw> stringToFlawSet( String encoding ) {   // <1>
+        return encoding.chars()
+                .mapToObj( c -> Flaw.encodingToFlaw( (char) c ) ) // <2>
+                .filter( f -> f != null )                        // <3>
+                .collect( toCollection( () -> noneOf( Flaw.class ) ) ); // <4>
+    }
+}
+----
+
+<1> Do not worry if you do not understand this immediately, the details will follow starting week 4 or 5.
+<2> Hey, still reading? You seem interested. This converts the int stream into an object stream of enum values.
+<3> We do not want null values. Might happen when an encoding is not valid.
+<4> Then collect it into a collection, in the specific case an `EnumSet` of `Flaw` values. We start with the empty set, which will
+be filled with the values resulting from the stream. +
+Note that we left out the imports.
+
+
+The `Flaw` enum and it's test are already in the project. I can't hurt to study the tests.
+
+.encoding table
+[cols="50,100", options="header"]
+|====
+| encoding | Flaw
+| 'U'      | No UPPER case letter
+| 'l'      | No lower case letter
+| '8'      | No digit
+| '#'      | No special character
+| 's'      | Too short
+|====
+
+Write two tests,
+
+. *invalidPassword* that checks for [red]*invalid* passwords as `@ParameterizedTest` which uses a table of invalid password and the encoding of the flaws to detect.
+. *validPassword* that accepts (one) or two valid passwords. You can also implement that as a `@ParameterizedTest`, but in the one password variant, you can get by
+ with a simple unit test method.
+
+First write the test for invalid passwords. Use a `@ParameterizedTest` and a `@CvsSource`.
+The test should assert that an exception is thrown and that all desciptions of the found flaws are present in the message.
+Make sure you have a csv test line for each of the failure cases, but also test for passwords that have multiple flaws.
+Best is to write all the invalid password and their encodings, but comment out the ones you are not yet testing.
+
+The csv records should contain two values, a flawed password and the encoded flaws.
+Example `"'password',U8#s"` because the password does not contain digits, UPPER case, nor special characters, and is too short, the encoded flaws are `U8#s`.
+You can apply the trick to _split_ with an empty string to get the encodings as 1 character string. Or you can stream the encoding with String.
+Note that the order of the encoding characters should not matter, but proper coding style might say write them consistently in definition- or alphabetical order.
+Choice is up to you. We chose the former.
+
+When the password is invalid, throw an `IllegalPasswordException` with a message that contains the descriptions of all flaws found.
+
+The idea of the validator method is that you initially fill an EnumSet with all possible flaw values, which is very easy: `EnumSet.allOf( Flaw.class )`.
+Then for every character of the password check,
+check if it fulfills a requirement. If it does, you can eliminate the corresponding Flaw from the set.
+See the https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/EnumSet.html[EnumSet ^]
+or https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Set.html[Set ^] API on how to do that.
+Once you have used up all the characters in the password, check if the set is empty.
+If it is, the password meets it's requirement and is flaw[green]**less**; +
+if not, the set contains the requirements [red]*not* fulfilled and the password is to be considered flawed.
